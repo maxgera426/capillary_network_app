@@ -47,7 +47,16 @@ st.title("Flow through a capillary network")
 
 G_input = st.text_area(
     "Enter the adjancency matrix \(G\) (format : [[0, 0.3, 0], [0.3, 0, 0.4], ...]):",
-    ""
+    """[
+    [0, 0.7, 0.6, 0, 0, 0, 0, 0],
+    [0.7, 0, 0, 0.3, 0.5, 0, 0, 0],
+    [0.6, 0, 0, 0, 0.3, 0, 0, 0],
+    [0, 0.3, 0, 0, 0.4, 0.2, 0, 0],
+    [0, 0.5, 0.3, 0.4, 0, 0, 0.3, 0],
+    [0, 0, 0, 0.2, 0, 0, 0.2, 0.4],
+    [0, 0, 0, 0, 0.3, 0.2, 0, 0.5],
+    [0, 0, 0, 0, 0, 0.4, 0.5, 0]
+]"""
 )
 try:
     G = np.array(eval(G_input))
@@ -55,7 +64,7 @@ try:
     if G.shape[0] != G.shape[1]:
         st.error("The matrix \(G\) must be square.")
     elif not np.allclose(G, G.T):
-        st.error("The matrix \(G\) must be symetrical.")
+        st.error("The matrix \(G\) must be symmetrical.")
     else:
         st.success("The matrix \(G\) is valid.")
 
@@ -92,20 +101,27 @@ try:
                 st.dataframe(pd.DataFrame(p, columns=["Pressure (mmHg)"], index=[f"Node {i+1}" for i in range(len(p))]))
 
                 Q = np.zeros([nb_nodes, nb_nodes])
-                Q_simp = []
-                for i in range(nb_nodes):
-                    for j in range(nb_nodes):
-                        if G[i, j] != 0:
-                            Q[i, j] = 133.32 * np.abs(p[i] - p[j]) / (R * G[i, j] / 1000)
-                            if j>i: 
-                                Q_simp.append(Q[i,j])
+                branches = []
+                flows = []
 
-                # Q_simp = np.round(np.array(Q_simp), decimals=18)
-                formatted_Q_simp = [f"{q:.5e}" for q in Q_simp]
-                st.write("Flow in the capillaries (m³/s) :")
-                st.dataframe(pd.DataFrame(np.array(formatted_Q_simp), columns=["Flow (m³/s)"], index=[f"Branch {i+1}" for i in range(len(p)+1)]))
+                # Calculer les flux et construire les branches
+                for i in range(nb_nodes):
+                    for j in range(i + 1, nb_nodes):  # Parcours uniquement la partie supérieure
+                        if G[i, j] != 0:
+                            flow = 133.32 * np.abs(p[i] - p[j]) / (R * G[i, j] / 1000)
+                            branches.append(f"C({i+1},{j+1})")
+                            flows.append(flow)
+
+                # Créer un DataFrame
+                flow_df = pd.DataFrame({
+                    "Branch": branches,
+                    "Flow (m³/s)": [f"{q:.5e}" for q in flows]
+                })
+
+                st.write("Flow in the capillaries (m³/s):")
+                st.dataframe(flow_df)
 
             except np.linalg.LinAlgError:
                 st.error("Error in solving equations. Check matrix \(G\).")
 except:
-    st.error("Please enter a valid matrix (square and symetrical).")
+    st.error("Please enter a valid matrix (square and symmetrical).")
