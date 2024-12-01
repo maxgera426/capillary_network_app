@@ -4,6 +4,7 @@ import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 
+
 def plot_network(G):
     # Créer un graphe NetworkX
     graph = nx.DiGraph()
@@ -42,7 +43,7 @@ def plot_network(G):
     # Retourner l'objet Matplotlib
     return plt
 
-st.title("Flough through a capillary network")
+st.title("Flow through a capillary network")
 
 G_input = st.text_area(
     "Enter the adjancency matrix \(G\) (format : [[0, 0.3, 0], [0.3, 0, 0.4], ...]):",
@@ -62,10 +63,10 @@ try:
             fig = plot_network(G)
             st.pyplot(fig)
 
-        pa = st.number_input("Arterial pressure (Pa)", value=0.0, step=1.0)
-        pv = st.number_input("Venous pressure (Pv)", value=0.0, step=1.0)
-        mu = st.number_input("Dynamic viscosity (µ) in Pa.s", value=0, format="%.6f")
-        r = st.number_input("Capillary radius (r) in meters", value=0, format="%.9f")
+        pa = st.number_input("Arterial pressure (Pa) in mmHg", value=0.0, step=1.0)
+        pv = st.number_input("Venous pressure (Pv) in mmHg", value=0.0, step=1.0)
+        mu = st.number_input("Dynamic viscosity (µ) in Pa.s", value=0.0, format="%.6f")
+        r = st.number_input("Capillary radius (r) in meters", value=0.0, format="%.9f")
 
         if st.button("Compute the blood flow"):
             R = 8 * mu / (np.pi * r**4)
